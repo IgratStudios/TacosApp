@@ -75,4 +75,8 @@ public class Manager<T>: Manager where T : Manager
 			}
 		}
 	}
+
+
 }
+
+

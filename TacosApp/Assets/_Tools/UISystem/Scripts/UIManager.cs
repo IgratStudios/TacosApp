@@ -429,9 +429,9 @@ public class UIManager : Manager<UIManager>
 	/// <summary>
 	/// Awake this instance and register the instance in this gameObject.
 	/// </summary>
-	protected override void Awake ()
+	public override void StartManager()
 	{
-		base.Awake ();
+		base.StartManager();
 		if(isThisManagerValid)
 		{
 			RegisterControllers();

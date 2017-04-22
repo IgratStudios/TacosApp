@@ -5,8 +5,12 @@ using UnityEngine;
 public class MainMenu : UIScreen 
 {
 
+	private string screenTryingToAccessId = string.Empty;
+
 	public override void Activate (UIScreenController.ScreenChangedEventHandler screenChangeCallback)
 	{
+		screenTryingToAccessId = string.Empty;
+		RestrictedAreaPopUp.OnPasswordValidated += OnPasswordValidated;
 		base.Activate (screenChangeCallback);
 	}
 
@@ -17,6 +21,8 @@ public class MainMenu : UIScreen
 
 	public override void Deactivate (UIScreenController.ScreenChangedEventHandler screenChangeCallback)
 	{
+		screenTryingToAccessId = string.Empty;
+		RestrictedAreaPopUp.OnPasswordValidated -= OnPasswordValidated;
 		base.Deactivate (screenChangeCallback);
 	}
 
@@ -27,12 +33,30 @@ public class MainMenu : UIScreen
 
 	public void OnKitchenButtonPressed()
 	{
-		UIManager.GetInstance().SwitchToScreenWithId(ScreenIds.sKitchenScreen);
+		screenTryingToAccessId = ScreenIds.sKitchenScreen;
+		PopUpsManager.GetInstance().ShowPopUpWithId(PopUpIds.sRestrictedAccess,true);
+
+	}
+
+	public void OnCashRegisterButtonPressed()
+	{
+		screenTryingToAccessId = ScreenIds.sCashRegisterScreen;
+		PopUpsManager.GetInstance().ShowPopUpWithId(PopUpIds.sRestrictedAccess,true);
 	}
 
 	public void OnAdminButtonPressed()
 	{
-		UIManager.GetInstance().SwitchToScreenWithId(ScreenIds.sAdminScreen);
+		screenTryingToAccessId = ScreenIds.sAdminScreen;
+		PopUpsManager.GetInstance().ShowPopUpWithId(PopUpIds.sRestrictedAccess,true);
 	}
+
+	private void OnPasswordValidated(bool result)
+	{
+		if(!string.IsNullOrEmpty(screenTryingToAccessId) && result)
+		{
+			UIManager.GetInstance().SwitchToScreenWithId(screenTryingToAccessId);
+		}
+	}
+
 
 }

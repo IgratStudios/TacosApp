@@ -18,6 +18,6 @@ public static class ScreenIds
 public static class PopUpIds
 {
 	public const string sRestrictedAccess = "RestrictedAccess";
-
+	public const string sConnecting = "Connecting";
 
 }

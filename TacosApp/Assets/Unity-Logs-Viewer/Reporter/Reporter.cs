@@ -12,15 +12,14 @@
 //use UNITY_CHANGE3 for unity 5.3 (fix for new SceneManger system  )
 
 
-#pragma warning disable 0618
-#pragma warning disable 0649
-
 using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 #if UNITY_CHANGE3
 using UnityEngine.SceneManagement;
 #endif
+
+#pragma warning disable 0649
 
 
 [System.Serializable]
@@ -335,12 +334,13 @@ public class Reporter : MonoBehaviour
 #if UNITY_CHANGE3
 			scenes = new string[ SceneManager.sceneCountInBuildSettings ];
 			currentScene = SceneManager.GetActiveScene().name;
-			SceneManager.sceneLoaded += OnLevelLoaded;
+			SceneManager.sceneLoaded += OnLevelWasLoadedDelegate;
 #else
 			scenes = new string[Application.levelCount];
 			currentScene = Application.loadedLevelName;
 #endif
 			DontDestroyOnLoad(gameObject);
+
 #if UNITY_CHANGE1
 			Application.RegisterLogCallback (new Application.LogCallback (CaptureLog));
 			Application.RegisterLogCallbackThreaded (new Application.LogCallback (CaptureLogThread));
@@ -1958,28 +1958,26 @@ public class Reporter : MonoBehaviour
 		}
 	}
 
-//	#if UNITY_CHANGE1 || UNITY_CHANG2
-//	//new scene is loaded
-//	void OnLevelWasLoaded()
-//	{
-//		if (clearOnNewSceneLoaded)
-//			clear();
-//
-//		currentScene = Application.loadedLevelName;
-//		Debug.Log("Scene " + Application.loadedLevelName + " is loaded");
-//
-//	}
-//	#endif
-
 	#if UNITY_CHANGE3
-	void OnLevelLoaded(Scene scene, LoadSceneMode mode)
+	//new scene is loaded
+	void OnLevelWasLoadedDelegate(Scene scene, LoadSceneMode mode)
 	{
 		if (clearOnNewSceneLoaded)
 			clear();
 
-		currentScene = scene.name;
-		Debug.Log("Scene " + scene.name + " was loaded on mode "+mode.ToString());
+		currentScene = SceneManager.GetActiveScene().name ;
+		Debug.Log( "Scene " + SceneManager.GetActiveScene().name + " is loaded");
+	}
+	#else
+	//new scene is loaded
+	void OnLevelWasLoaded()
+	{
+		if (clearOnNewSceneLoaded)
+			clear();
 
+		currentScene = Application.loadedLevelName;
+		Debug.Log("Scene " + Application.loadedLevelName + " is loaded");
+		
 	}
 	#endif
 
@@ -2024,7 +2022,7 @@ public class Reporter : MonoBehaviour
 			url = System.IO.Path.Combine(streamingAssetsPath, prefFile);
 		}
 
-		if (Application.platform != RuntimePlatform.OSXWebPlayer && Application.platform != RuntimePlatform.WindowsWebPlayer)
+		if (Application.platform != RuntimePlatform.WebGLPlayer)
 			if (!url.Contains("://"))
 				url = "file://" + url;
 
@@ -2043,6 +2041,5 @@ public class Reporter : MonoBehaviour
 		yield break;
 	}
 }
-
 
 

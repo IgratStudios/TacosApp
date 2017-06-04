@@ -7,6 +7,7 @@ public class MainMenu : UIScreen
 
 	private string screenTryingToAccessId = string.Empty;
 
+
 	public override void Activate (UIScreenController.ScreenChangedEventHandler screenChangeCallback)
 	{
 		screenTryingToAccessId = string.Empty;
@@ -28,7 +29,9 @@ public class MainMenu : UIScreen
 
 	public void OnOrdersButtonPressed()
 	{
-		UIManager.GetInstance().SwitchToScreenWithId(ScreenIds.sOrdersScreen);
+		screenTryingToAccessId = ScreenIds.sOrdersScreen;
+		PopUpsManager.GetInstance().ShowPopUpWithId(PopUpIds.sConnecting,true);
+		ConnectionManager.GetInstance().TryToStart(false,OnConnectionDone);
 	}
 
 	public void OnKitchenButtonPressed()
@@ -54,9 +57,14 @@ public class MainMenu : UIScreen
 	{
 		if(!string.IsNullOrEmpty(screenTryingToAccessId) && result)
 		{
-			UIManager.GetInstance().SwitchToScreenWithId(screenTryingToAccessId);
+			PopUpsManager.GetInstance().ShowPopUpWithId(PopUpIds.sConnecting,true);
+			ConnectionManager.GetInstance().TryToStart(true,OnConnectionDone);
 		}
 	}
 
-
+	private void OnConnectionDone()
+	{
+		UIManager.GetInstance().SwitchToScreenWithId(screenTryingToAccessId);
+		PopUpsManager.GetInstance().HidePopUpWithId(PopUpIds.sConnecting);
+	}
 }

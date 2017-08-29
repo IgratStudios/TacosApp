@@ -5,9 +5,11 @@ using UnityEngine.Networking;
 using System;
 using UnityEngine.SceneManagement;
 
+
 public enum NETWORK_PREFAB_TYPE
 {
 	NONE,
+	MENU,
 	ORDER
 	//add others here
 }
@@ -23,9 +25,10 @@ public class ConnectionManager : Manager<ConnectionManager>
 {
 	public delegate void ConnectionDone();
 
-
 	public UNetworkManager networkManager;
-//	public UNetworkDiscovery networkDiscovery;
+	//public UNetworkDiscovery networkDiscovery;
+
+
 	public string clientId = "TacosClientApp";
 
 	public List<NetworkPrefabData> allNetPrefabDatas = new List<NetworkPrefabData>();
@@ -40,32 +43,38 @@ public class ConnectionManager : Manager<ConnectionManager>
 
 	public override void StartManager ()
 	{
+        if (alreadystarted)
+            return;    
+        
 //		networkDiscovery.Init();
 		CreatePrefabsMap();
 		base.StartManager ();
 	}
 
-	private void CreatePrefabsMap()
-	{
-		for(int i = 0 ; i < allNetPrefabDatas.Count; i++)
-		{
-			netPrefabsMap.Add(allNetPrefabDatas[i].prefabType,allNetPrefabDatas[i].prefab);
-			RegisterNetworkPrefab(allNetPrefabDatas[i].prefab);
-		}
-	}
+    
+    private void CreatePrefabsMap()
+    {
+        Debug.Log("Creating network prefabs map.[" + allNetPrefabDatas.Count + "] network prefabs founded!");
 
-	public bool TryGetNetPrefab(NETWORK_PREFAB_TYPE prefabType,out GameObject prefab)
+        for (int i = 0; i < allNetPrefabDatas.Count; i++)
+        {
+            netPrefabsMap.Add(allNetPrefabDatas[i].prefabType, allNetPrefabDatas[i].prefab);
+            RegisterNetworkPrefab(allNetPrefabDatas[i].prefab);
+        }
+    }
+
+    public bool TryGetNetPrefab(NETWORK_PREFAB_TYPE prefabType,out GameObject prefab)
 	{
 		return netPrefabsMap.TryGetValue(prefabType,out prefab);
 	}
-
-
+		
 
 	public void TryToStart(bool tryToBeHost,ConnectionDone callback)
 	{
-		//Check if there is already a host
-		bool isThisAClient = networkManager.clientConnectedToServer;
-		Debug.Log("Trying to start as a Host?["+tryToBeHost+"]. There is already a Host["+isThisAClient+"].");
+        //Check if there is already a host
+        bool isThisAClient = networkManager.clientConnectedToServer;
+
+        Debug.Log("Trying to start as a Host?["+tryToBeHost+"]. There is already a Host["+isThisAClient+"].");
 		if(isThisAClient)
 		{
 			if(callback != null)
@@ -108,12 +117,12 @@ public class ConnectionManager : Manager<ConnectionManager>
 
 	public bool IsClient()
 	{
-		return networkManager.IsClientConnected();
+        return networkManager.IsClientConnected();
 	}
 
 	public bool IsServer()
 	{
-		return networkManager.isServer;
+        return networkManager.isServer;
 	}
 
 	public void AddNetworkDataSyncer(NetworkDataSyncer playerDataSyncer,bool isThisclientDataSyncer)
@@ -157,21 +166,33 @@ public class ConnectionManager : Manager<ConnectionManager>
 		return uint.MinValue;
 	}
 
-	public void RegisterNetworkPrefab(GameObject prefabToRegister)
+	public string GetLocalDataSyncerUniqueId()
 	{
-		NetworkIdentity netId = prefabToRegister.GetComponent<NetworkIdentity>();
-		if(netId != null)
+		for(int i = 0; i < allDataSyncers.Count; i++)
 		{
-			if(_mustShowDebugInfo)
+			if(allDataSyncers[i].isLocalPlayer)
 			{
-				Debug.Log("Registering Prefab ["+prefabToRegister.name+"]");
+				return allDataSyncers[i].UniqueId;
 			}
-			ClientScene.RegisterPrefab(prefabToRegister);
-
 		}
+		return string.Empty;
 	}
 
-	public void SpawnNetOrder(string uid, string userName, NetworkOrder.OrderData orderData)
+    public void RegisterNetworkPrefab(GameObject prefabToRegister)
+    {
+        NetworkIdentity netId = prefabToRegister.GetComponent<NetworkIdentity>();
+        if (netId != null)
+        {
+            if (_mustShowDebugInfo)
+            {
+                Debug.Log("Registering Prefab [" + prefabToRegister.name + "]");
+            }
+            ClientScene.RegisterPrefab(prefabToRegister);
+
+        }
+    }
+
+    public void SpawnNetOrder(string uid, string userName, NetworkOrder.OrderData orderData)
 	{
 		if(_mustShowDebugInfo)
 		{
@@ -195,7 +216,29 @@ public class ConnectionManager : Manager<ConnectionManager>
 		}
 	}
 
+	public void SpawnNetMenu(string uid, string userName)
+	{
+		if(_mustShowDebugInfo)
+		{
+			Debug.Log("Spawn New NetMenu ["+uid+"]["+userName+"]");
+		}
 
+		if(thisClientDataSyncer != null)
+		{
+			thisClientDataSyncer.CmdCreateMenuOnServer(NETWORK_PREFAB_TYPE.MENU,uid,userName);
+		}
+		else
+		{
+			for(int i = 0; i < allDataSyncers.Count; i++)
+			{
+				if(allDataSyncers[i].statusData.entityType == ENTITY_TYPE.HOST)
+				{
+					allDataSyncers[i].CmdCreateMenuOnServer(NETWORK_PREFAB_TYPE.MENU,uid,userName);
+					break;
+				}
+			}
+		}
+	}
 
 
 
@@ -220,26 +263,26 @@ public class ConnectionManager : Manager<ConnectionManager>
 		{
 			style.normal.textColor = Color.black;
 
-			GUILayout.Label("Network status:["+SceneManager.GetActiveScene().name+"]",style);
-			GUILayout.Label("Network Server/Client Active:"+networkManager.isNetworkActive,style);
-			GUILayout.Label("Waiting host:"+isWaitingHost+" at port["+networkManager.networkPort+"]",style);
-			GUILayout.Label("Client:"+IsClient(),style);
-			GUILayout.Label("Server:"+IsServer(),style);
-			GUILayout.Label("Server Port:"+networkManager.networkPort,style);
-			GUILayout.Label("Messages:",style);
-			GUILayout.Label(messageListened[0],style);
-			GUILayout.Label("-----------------------------------",style);
-			GUILayout.Label(messageListened[1],style);
-			GUILayout.Label("-----------------------------------",style);
-			GUILayout.Label(messageListened[2],style);
-			if(IsClient())
-			{
-				GUILayout.Label("Client Connected to server ["+networkManager.IsClientConnected()+"]["+networkManager.networkAddress+":"+networkManager.networkPort+"] ",style);
-			}
-			if(IsServer())
-			{
-				GUILayout.Label("Clients Connected to this host ["+networkManager.clientsConnectedToThisServer+"/"+networkManager.maxConnections+"] ActivePlayersGO["+networkManager.numPlayers+"]",style);
-			}
+            GUILayout.Label("Network status:[" + SceneManager.GetActiveScene().name + "]", style);
+            GUILayout.Label("Network Server/Client Active:" + networkManager.isNetworkActive, style);
+            GUILayout.Label("Waiting host:" + isWaitingHost + " at port[" + networkManager.networkPort + "]", style);
+            GUILayout.Label("Client:" + IsClient(), style);
+            GUILayout.Label("Server:" + IsServer(), style);
+            GUILayout.Label("Server Port:" + networkManager.networkPort, style);
+            GUILayout.Label("Messages:", style);
+            GUILayout.Label(messageListened[0], style);
+            GUILayout.Label("-----------------------------------", style);
+            GUILayout.Label(messageListened[1], style);
+            GUILayout.Label("-----------------------------------", style);
+            GUILayout.Label(messageListened[2], style);
+            if (IsClient())
+            {
+                GUILayout.Label("Client Connected to server [" + networkManager.IsClientConnected() + "][" + networkManager.networkAddress + ":" + networkManager.networkPort + "] ", style);
+            }
+            if (IsServer())
+            {
+                GUILayout.Label("Clients Connected to this host [" + networkManager.clientsConnectedToThisServer + "/" + networkManager.maxConnections + "] ActivePlayersGO[" + networkManager.numPlayers + "]", style);
+            }
             if (thisClientDataSyncer != null)
             {
                 GUILayout.Label("ClientDataSyncer statusData.EntityType [" + thisClientDataSyncer.statusData.entityType + "]", style);

@@ -8,6 +8,6 @@ public class ClientData : BasicData
 {
 
 	public string password;
-
+	public string superPassword;
 
 }

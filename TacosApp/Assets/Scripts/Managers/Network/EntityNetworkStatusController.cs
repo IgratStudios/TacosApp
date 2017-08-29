@@ -50,6 +50,8 @@ public class EntityNetworkStatusController : NetworkBehaviour
 			{
 				UpdateStatusOnServer(ENTITY_TYPE.CLIENT);
 			}
+
+
 		}
 
 	}

@@ -2,12 +2,14 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.EventSystems;
 
 public class RestrictedAreaPopUp : UIScreen 
 {
 	public delegate void PasswordValidated(bool result);
 	public static PasswordValidated OnPasswordValidated;
 
+	public bool isSuperAccess = false;
 	private UIScreenManager screenManager;
 
 	public InputField passwordField;
@@ -21,6 +23,8 @@ public class RestrictedAreaPopUp : UIScreen
 		}
 		SwitchInvalidPassword(false);
 		ResetPasswordField();
+		EventSystem.current.SetSelectedGameObject(passwordField.gameObject, null);
+		passwordField.OnPointerClick(new PointerEventData(EventSystem.current));
 		base.Activate (screenChangeCallback);
 	}
 
@@ -43,7 +47,15 @@ public class RestrictedAreaPopUp : UIScreen
 
 	public void OnPasswordEntered()
 	{
-		bool result = ClientProfileManager.GetProfileManager().IsPasswordValid(passwordField.text);
+		bool result = false;
+		if (isSuperAccess) 
+		{
+			result = ClientProfileManager.GetProfileManager ().IsSuperPasswordValid (passwordField.text);
+		} 
+		else 
+		{
+			result = ClientProfileManager.GetProfileManager ().IsPasswordValid (passwordField.text);
+		}
 		if(result)
 		{
 			//close pop up

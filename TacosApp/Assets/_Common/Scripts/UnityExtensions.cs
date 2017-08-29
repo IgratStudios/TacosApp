@@ -2,6 +2,7 @@
 using System.Text;
 using System.Collections;
 using UnityEngine.EventSystems;
+using UnityEngine.UI;
 
 //Version: 1.0.0
 
@@ -635,4 +636,8 @@ public static class UnityExtensions
 		return false;
 	}
 
+	public static int GetOptionIndex(this Dropdown dropdown,string option)
+	{
+		return dropdown.options.FindIndex(opt => opt.text == option);
+	}
 }

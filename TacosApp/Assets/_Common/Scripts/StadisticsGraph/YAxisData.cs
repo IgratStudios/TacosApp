@@ -44,9 +44,4 @@ public class YAxisData : PoolableObject
 			dataLabel.text = dataValue.ToString();
 		}
 	}
-
-	public void Despawn()
-	{
-		ObjectManager.Despawn(this);
-	}
 }

@@ -14,6 +14,13 @@ public enum ENTITY_TYPE
 public class NetworkDataSyncer : NetworkBehaviourBase 
 {
 
+	private string uID = string.Empty;
+
+	public string UniqueId
+	{
+		get{ return uID;}
+	}
+
 	[System.Serializable]
 	public class StatusData
 	{
@@ -26,13 +33,15 @@ public class NetworkDataSyncer : NetworkBehaviourBase
 	public override void OnStartClient()
 	{
 		base.OnStartClient();
-		Debug.Log("On NDS id["+netIdentity.netId+"] CLIENT started ["+statusData.entityType+"]");
+        uID = netIdentity.netId.ToString();
+        Debug.Log("On NDS id["+netIdentity.netId+"] CLIENT started ["+statusData.entityType+"]");
 	}
 
 	public override void OnStartServer()
 	{
 		base.OnStartServer();
-		Debug.Log("On NDS id["+netIdentity.netId+"] SERVER started["+statusData.entityType+"]");
+        uID = netIdentity.netId.ToString();
+        Debug.Log("On NDS id["+netIdentity.netId+"] SERVER started["+statusData.entityType+"]");
     }
 
 	public override void OnStartLocalPlayer ()
@@ -51,6 +60,12 @@ public class NetworkDataSyncer : NetworkBehaviourBase
             {
                 CmdUpdateUtatusOnServer(ENTITY_TYPE.CLIENT);
             }
+
+			//Add here other calls needed when a new client gets connected
+			uID = netIdentity.netId.ToString();
+			//spawn menu that syncs over the network
+			ConnectionManager.GetInstance().SpawnNetMenu("NETMENU_"+uID,uID);
+
         }
 	}
 
@@ -71,7 +86,7 @@ public class NetworkDataSyncer : NetworkBehaviourBase
 		if(ConnectionManager.GetInstance().TryGetNetPrefab(prefabType, out netOrderPrefab))
 		{
 			Debug.Log("Spawning prefab for ["+prefabType+"]");
-			GameObject newNetOrderGO = 	(GameObject)Instantiate(netOrderPrefab,Vector3.zero, Quaternion.identity);
+			GameObject newNetOrderGO = 	Instantiate(netOrderPrefab,Vector3.zero, Quaternion.identity);
 			NetworkOrder netOrder = newNetOrderGO.GetComponent<NetworkOrder>();
 			if(netOrder != null)
 			{
@@ -89,6 +104,44 @@ public class NetworkDataSyncer : NetworkBehaviourBase
 		{
 			Debug.LogWarning("No Prefab founded for["+prefabType+"]");
 		}
+
+	}
+
+
+
+	[Command]
+	public void CmdCreateMenuOnServer(NETWORK_PREFAB_TYPE prefabType,string uid, string userName)
+	{
+		GameObject netMenuPrefab = null;
+
+		if(ConnectionManager.GetInstance().TryGetNetPrefab(prefabType, out netMenuPrefab))
+		{
+			Debug.Log("Spawning prefab for ["+prefabType+"], PrefabFounded["+(netMenuPrefab != null)+"]");
+			GameObject newNetMenuGO = Instantiate(netMenuPrefab,Vector3.zero, Quaternion.identity);
+            if (newNetMenuGO != null)
+            {
+                NetworkMenu netMenu = newNetMenuGO.GetComponent<NetworkMenu>();
+                if (netMenu != null)
+                {
+                    netMenu.uid = uid;
+                    netMenu.userName = userName;
+                    newNetMenuGO.name = "Menu(" + uid + "_" + userName + ")";
+
+                    netMenu.SetMenuData(MenuDataManager.GetMenuDataManager().GetCurrentMenuData());
+
+                    NetworkServer.Spawn(newNetMenuGO);
+                }
+            }
+            else
+            {
+                Debug.LogError("Could not create new ["+prefabType+"] instance.");
+            }
+		}
+		else
+		{
+			Debug.LogWarning("No Prefab founded for["+prefabType+"]");
+		}
+
 
 	}
 

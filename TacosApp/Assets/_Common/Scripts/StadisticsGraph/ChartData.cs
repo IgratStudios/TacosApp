@@ -200,8 +200,4 @@ public class ChartData : PoolableObject
 		}
 	}
 		
-	public void Despawn()
-	{
-		ObjectManager.Despawn(this);
-	}
 }

@@ -46,9 +46,5 @@ public class ChartInfoLabel : PoolableObject
 		labelAux.text = labelTextAux;
 		graphicElement.color = dataColor;
 	}
-
-	public void Despawn()
-	{
-		ObjectManager.Despawn(this);
-	}
+		
 }

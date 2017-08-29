@@ -13,7 +13,7 @@ namespace Data
 		public string mainDirectoryName = "Data";
 		public string fileName 			= "data.json";
 
-		protected T currentData;
+		public T currentData;
 
 		public override void StartManager()
 		{
@@ -43,7 +43,7 @@ namespace Data
 
 		public string getMainFolderPath()
 		{
-			return Application.persistentDataPath + "/" + mainDirectoryName;
+			return Application.persistentDataPath + "/" + currentUserId + "/" + mainDirectoryName;
 		}
 
 		public string getLocalDataPath()
@@ -65,9 +65,9 @@ namespace Data
 			return File.Exists (getLocalDataPath ());
 		}
 
-		public void saveLocalData(bool rewriteEmpty = false)
+		public void saveLocalData(bool rewriteWithDefault = false)
 		{
-			if (rewriteEmpty) 
+			if (rewriteWithDefault) 
 			{
 				currentData = Activator.CreateInstance<T>();
 				fillDefaultData();
@@ -92,7 +92,13 @@ namespace Data
 			afterFirstRead();
 		}
 
-		protected virtual void afterFirstRead(){}
+		protected virtual void afterFirstRead()
+		{
+			if (currentData != null) 
+			{
+				currentData.AfterFirstRead ();
+			}
+		}
 			
 
 		public T getCurrentData()

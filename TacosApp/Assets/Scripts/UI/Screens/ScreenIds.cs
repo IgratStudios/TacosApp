@@ -3,9 +3,10 @@
 public static class ScreenIds 
 {
 	public const string sIntroScreen = "Intro";
+	public const string sPreLoginScreen = "PreLogin";
 	public const string sMainMenuScreen = "MainMenu";
 	public const string sOrdersScreen = "Orders";
-	public const string sKitchenScreen = "Kitchen";
+	public const string sMenuEditionScreen = "MenuEdition";
 	public const string sCashRegisterScreen = "CashRegister";
 	public const string sAdminScreen = "Management";
 	public const string sInventoryScreen = "Inventory";
@@ -18,6 +19,7 @@ public static class ScreenIds
 public static class PopUpIds
 {
 	public const string sRestrictedAccess = "RestrictedAccess";
+	public const string sRestrictedSuperAccess = "RestrictedSuperAccess";
 	public const string sConnecting = "Connecting";
 
 }

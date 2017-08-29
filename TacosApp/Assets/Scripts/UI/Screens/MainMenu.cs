@@ -30,41 +30,40 @@ public class MainMenu : UIScreen
 	public void OnOrdersButtonPressed()
 	{
 		screenTryingToAccessId = ScreenIds.sOrdersScreen;
-		PopUpsManager.GetInstance().ShowPopUpWithId(PopUpIds.sConnecting,true);
-		ConnectionManager.GetInstance().TryToStart(false,OnConnectionDone);
+		UIManager.GetInstance().SwitchToScreenWithId(screenTryingToAccessId);
 	}
 
-	public void OnKitchenButtonPressed()
+	public void OnMenuEditionButtonPressed()
 	{
-		screenTryingToAccessId = ScreenIds.sKitchenScreen;
-		PopUpsManager.GetInstance().ShowPopUpWithId(PopUpIds.sRestrictedAccess,true);
+		screenTryingToAccessId = ScreenIds.sMenuEditionScreen;
+		PopUpsManager.GetInstance().ShowPopUpWithId(PopUpIds.sRestrictedSuperAccess,true);
 
 	}
 
 	public void OnCashRegisterButtonPressed()
 	{
-		screenTryingToAccessId = ScreenIds.sCashRegisterScreen;
-		PopUpsManager.GetInstance().ShowPopUpWithId(PopUpIds.sRestrictedAccess,true);
+//		screenTryingToAccessId = ScreenIds.sCashRegisterScreen;
+//		PopUpsManager.GetInstance().ShowPopUpWithId(PopUpIds.sRestrictedAccess,true);
 	}
 
 	public void OnAdminButtonPressed()
 	{
-		screenTryingToAccessId = ScreenIds.sAdminScreen;
-		PopUpsManager.GetInstance().ShowPopUpWithId(PopUpIds.sRestrictedAccess,true);
+//		screenTryingToAccessId = ScreenIds.sAdminScreen;
+//		PopUpsManager.GetInstance().ShowPopUpWithId(PopUpIds.sRestrictedAccess,true);
 	}
 
 	private void OnPasswordValidated(bool result)
 	{
 		if(!string.IsNullOrEmpty(screenTryingToAccessId) && result)
 		{
-			PopUpsManager.GetInstance().ShowPopUpWithId(PopUpIds.sConnecting,true);
-			ConnectionManager.GetInstance().TryToStart(true,OnConnectionDone);
+			UIManager.GetInstance().SwitchToScreenWithId(screenTryingToAccessId);
+			PopUpsManager.GetInstance().HidePopUpWithId(PopUpIds.sRestrictedSuperAccess);
 		}
 	}
 
-	private void OnConnectionDone()
+	public void OnBackButtonPressed()
 	{
-		UIManager.GetInstance().SwitchToScreenWithId(screenTryingToAccessId);
-		PopUpsManager.GetInstance().HidePopUpWithId(PopUpIds.sConnecting);
+		UIManager.GetInstance().SwitchToScreenWithId(ScreenIds.sPreLoginScreen);
 	}
+
 }

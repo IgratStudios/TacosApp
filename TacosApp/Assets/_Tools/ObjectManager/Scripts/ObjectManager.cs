@@ -45,6 +45,11 @@ public abstract class PoolableObject : CachedMonoBehaviour
     *  Return: None
     */
     abstract public void OnDespawn();
+
+	public void Despawn()
+	{
+		ObjectManager.Despawn(this);
+	}
 }
 
 

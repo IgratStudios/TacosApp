@@ -3,7 +3,7 @@ using System;
 
 namespace Data
 {
-	[Serializable]
+	[System.Serializable]
 	public class BasicData
 	{
 		public string id;
@@ -14,7 +14,7 @@ namespace Data
 
 		public virtual bool compareAndUpdate(BasicData remote, bool ignoreVersion = false)
 		{
-			if(remote.version != version || ignoreVersion)
+			if(remote.version > version || ignoreVersion)
 			{
 				updateFrom(remote, ignoreVersion);
 				return true;
@@ -31,5 +31,7 @@ namespace Data
 				version = readOnlyRemote.version;
 			}
 		}
+
+		public virtual void AfterFirstRead(){}
 	}
 }

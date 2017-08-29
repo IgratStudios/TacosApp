@@ -127,9 +127,5 @@ public class VBarChartElement : PoolableObject
 		addLesserThanSymbol = false;
 		addBiggerThanSymbol = false;
 	}
-
-	public void Despawn()
-	{
-		ObjectManager.Despawn(this);
-	}
+		
 }
